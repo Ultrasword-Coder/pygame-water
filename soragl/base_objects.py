@@ -54,15 +54,13 @@ class Sprite(scene.Component):
         if width <= 0 or height <= 0:
             self._sprite = sprite
             self.width, self.height = self._sprite.get_size()
+        elif sprite is not None:
+            self._sprite = SORA.scale_image(sprite, (self.width, self.height))
         else:
-            self._sprite = (
-                SORA.scale_image(sprite, (width, height))
-                if sprite is not None
-                else SORA.make_surface(width, height)
-            )
+            self._sprite = SORA.make_surface(width, height)
+        # calculate half width and height
         self.hwidth = self.width // 2
         self.hheight = self.height // 2
-        # print(self.width, self.height, self._sprite)
 
     @property
     def sprite(self):

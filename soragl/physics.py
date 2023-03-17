@@ -13,6 +13,7 @@ from pygame import draw as pgdraw
 # global constnats
 # ------------------------------------------------------------ #
 
+
 class World2D:
     RIGHT = pgmath.Vector2(1, 0)
     LEFT = pgmath.Vector2(-1, 0)
@@ -22,6 +23,8 @@ class World2D:
     Y_AXIS = UP
 
     GRAVITY = DOWN * 9.8
+
+
 class World3D:
     X_AXIS = pgmath.Vector3(1, 0, 0)
     Y_AXIS = pgmath.Vector3(0, 1, 0)
@@ -31,10 +34,10 @@ class World3D:
     UP = Y_AXIS
 
 
-
 # ------------------------------------------------------------ #
 # create a base entity class using the entity system
 # ------------------------------------------------------------ #
+
 
 class Entity:
     ENTITY_COUNT = 0
@@ -65,28 +68,28 @@ class Entity:
         # print(self)
         pass
 
-    #=== components
+    # === components
     @property
     def components(self) -> dict:
         """Components property"""
         return self._components
-    
+
     def add_component(self, component) -> "Component":
         """Add a component to the entity"""
         self.world.add_component(self, component)
         return component
-    
+
     def remove_component(self, component):
         """Remove a component from the entity"""
         if component in self._components:
             self.world.remove_component(self, component)
-    
+
     def get_component_from_hash(self, comp_class_hash: int):
         """Get a component from the entity"""
         if comp_class_hash in self._components:
             return self._components[comp_class_hash]
         return None
-    
+
     def get_component(self, comp_class):
         """Get a component from the entity"""
         return self.get_component_from_hash(hash(comp_class))
@@ -95,7 +98,7 @@ class Entity:
         """Check if an entity has a component"""
         return hash(comp_class) in self._components
 
-    #=== default functions
+    # === default functions
     def update(self):
         """Default update function"""
         pass
@@ -104,24 +107,26 @@ class Entity:
         """Kill the entity"""
         self._alive = False
 
-    #=== values / setters / getters
+    # === values / setters / getters
     @property
     def area(self):
         """Get the area"""
         return (self.rect.w, self.rect.h)
-    
+
     @area.setter
     def area(self, new_area: tuple):
         """set a new area"""
         if len(new_area) != 2:
-            raise NotImplementedError(f"The area {new_area} is not supported yet! {__file__} {__package__}")
-        self.rect.w, self.rect.h= new_area
-    
-    #=== standard overloads
+            raise NotImplementedError(
+                f"The area {new_area} is not supported yet! {__file__} {__package__}"
+            )
+        self.rect.w, self.rect.h = new_area
+
+    # === standard overloads
     def __eq__(self, o):
         """Overload the == operator"""
         return id(self) == id(o)
-    
+
     def __hash__(self):
         """Overload the hash operator"""
         return self._entity_id
@@ -139,6 +144,7 @@ TODO:
 - figure out how to do the above :)
 """
 
+
 def is_separated(shape1, shape2, axis: pgmath.Vector2) -> bool:
     """Return True if the shapes are separated along the given axis"""
     proj1 = [axis.dot(vertex) for vertex in shape1]
@@ -146,6 +152,7 @@ def is_separated(shape1, shape2, axis: pgmath.Vector2) -> bool:
     min_proj1, max_proj1 = min(proj1), max(proj1)
     min_proj2, max_proj2 = min(proj2), max(proj2)
     return max_proj1 < min_proj2 or min_proj1 > max_proj2
+
 
 def overlap_general(shape1_, shape2_) -> bool:
     """Check if two objects overlap -- axis not used"""
@@ -155,14 +162,14 @@ def overlap_general(shape1_, shape2_) -> bool:
 
     # Test all the normals (edge directions) of shape1
     for i in range(len(shape1)):
-        edge = shape1[i] - shape1[i-1]
+        edge = shape1[i] - shape1[i - 1]
         axis = pgmath.Vector2(-edge.y, edge.x).normalize()
         if is_separated(shape1, shape2, axis):
             return False
 
     # Test all the normals (edge directions) of shape2
     for i in range(len(shape2)):
-        edge = shape2[i] - shape2[i-1]
+        edge = shape2[i] - shape2[i - 1]
         axis = pgmath.Vector2(-edge.y, edge.x).normalize()
         if is_separated(shape1, shape2, axis):
             return False
@@ -174,6 +181,7 @@ def overlap_general(shape1_, shape2_) -> bool:
 # ------------------------------------------------------------ #
 # particle handling + physics
 # ------------------------------------------------------------ #
+
 
 class ParticleHandler(Entity):
     # ------------------------------ #
@@ -201,43 +209,58 @@ class ParticleHandler(Entity):
     def register_timer_function(cls, name, func):
         """Register a timer function"""
         cls.TIMER_FUNC[name] = func
-    
+
     @classmethod
     def get_create_function(cls, name):
         """Get a create function"""
-        return cls.CREATE[name] if name in cls.CREATE else cls.CREATE[cls.DEFAULT_CREATE]
-    
+        return (
+            cls.CREATE[name] if name in cls.CREATE else cls.CREATE[cls.DEFAULT_CREATE]
+        )
+
     @classmethod
     def get_update_function(cls, name):
         """Get an update fucntion"""
-        return cls.UPDATE[name] if name in cls.UPDATE else cls.UPDATE[cls.DEFAULT_UPDATE]
-    
+        return (
+            cls.UPDATE[name] if name in cls.UPDATE else cls.UPDATE[cls.DEFAULT_UPDATE]
+        )
+
     @classmethod
     def get_create_timer_funcion(cls, name):
         """Get a timer function"""
-        return cls.TIMER_FUNC[name] if name in cls.TIMER_FUNC else cls.TIMER_FUNC[cls.DEFAULT_TIMER]
-    
+        return (
+            cls.TIMER_FUNC[name]
+            if name in cls.TIMER_FUNC
+            else cls.TIMER_FUNC[cls.DEFAULT_TIMER]
+        )
+
     # ------------------------------ #
 
-    def __init__(self, args: dict = {}, max_particles: int = 100, create_func: str = None, update_func: str = None, create_timer_func: str = None):
+    def __init__(
+        self,
+        args: dict = {},
+        max_particles: int = 100,
+        create_func: str = None,
+        update_func: str = None,
+        create_timer_func: str = None,
+    ):
         super().__init__()
         # private
         self._particles = {}
         self._particle_count = 0
         self._max_particles = max_particles
-        self._data = {
-            "interval": 0.1
-        }
+        self._data = {"interval": 0.1}
         self._timer = 0
         self._remove = []
         self.args = args
 
         # public
         self._function_data = [create_func, update_func, create_timer_func]
-        self.create_timer_func = ParticleHandler.get_create_timer_funcion(name=create_timer_func)
+        self.create_timer_func = ParticleHandler.get_create_timer_funcion(
+            name=create_timer_func
+        )
         self.create_func = ParticleHandler.get_create_function(name=create_func)
         self.update_func = ParticleHandler.get_update_function(name=update_func)
-    
+
     def get_new_particle_id(self):
         """Get a new particle id"""
         self._particle_count += 1
@@ -251,11 +274,11 @@ class ParticleHandler(Entity):
     def __getitem__(self, name):
         """Get a piece of data"""
         return self._data[name]
-    
+
     def __setitem__(self, name, value):
         """Set a piece of data"""
         self._data[name] = value
-    
+
     def remove_particle(self, particle):
         """Remove a particle"""
         self._remove.append(particle[-1])
@@ -279,12 +302,15 @@ class ParticleHandler(Entity):
 # create function
 def _default_create(parent, **kwargs):
     """Default create function for particles"""
-    return [parent.position.xy, 
-            kwargs["vel"] if "vel" in kwargs else pgmath.Vector2(random.random()-0.5, -5),
-            kwargs["radius"] if "radius" in kwargs else 2, 
-            kwargs["color"] if "color" in kwargs else (0, 0, 255),
-            kwargs["life"] if "life" in kwargs else 1.0,
-            parent.get_new_particle_id()]
+    return [
+        parent.position.xy,
+        kwargs["vel"] if "vel" in kwargs else pgmath.Vector2(random.random() - 0.5, -5),
+        kwargs["radius"] if "radius" in kwargs else 2,
+        kwargs["color"] if "color" in kwargs else (0, 0, 255),
+        kwargs["life"] if "life" in kwargs else 1.0,
+        parent.get_new_particle_id(),
+    ]
+
 
 # update function
 def _default_update(parent, particle):
@@ -298,7 +324,8 @@ def _default_update(parent, particle):
     # move
     particle[0] += particle[1]
     # render
-    pgdraw.circle(SORA.FRAMEBUFFER, particle[3], particle[0], particle[2]) #, 1)
+    pgdraw.circle(SORA.FRAMEBUFFER, particle[3], particle[0], particle[2])  # , 1)
+
 
 # timer function
 def _default_timer(parent):
@@ -312,8 +339,12 @@ def _default_timer(parent):
         parent._particles[particle[-1]] = particle
         # print(parent._particle_count)
 
-# update function
-ParticleHandler.register_create_function(ParticleHandler.DEFAULT_CREATE, _default_create)
-ParticleHandler.register_update_function(ParticleHandler.DEFAULT_UPDATE, _default_update)
-ParticleHandler.register_timer_function(ParticleHandler.DEFAULT_TIMER, _default_timer)
 
+# update function
+ParticleHandler.register_create_function(
+    ParticleHandler.DEFAULT_CREATE, _default_create
+)
+ParticleHandler.register_update_function(
+    ParticleHandler.DEFAULT_UPDATE, _default_update
+)
+ParticleHandler.register_timer_function(ParticleHandler.DEFAULT_TIMER, _default_timer)

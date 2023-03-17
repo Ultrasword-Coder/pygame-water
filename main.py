@@ -32,23 +32,22 @@ from scripts import water
 
 sc = scene.Scene(config=scene.load_config(scene.Scene.DEFAULT_CONFIG))
 scw = sc.make_layer(sc.get_config(), 1)
-scw.get_chunk(0, 0)
+# scw.get_chunk(0, 0)
 
 # create water
-ww = water.Water(1280, 100)
-ww.position.xy = (0, 720 - 100)
+ww = water.Water(300, 50)
+ww.position.xy = (200, 200)
 
 scw.add_entity(ww)
 
 # aspects
-scw.add_aspect(base_objects.TileMapDebug())
-scw.add_aspect(base_objects.SpriteRendererAspect())
+# scw.add_aspect(base_objects.TileMapDebug())
+scw.add_aspect(base_objects.SpriteRendererAspectDebug())
 scw.add_aspect(base_objects.Collision2DRendererAspectDebug())
 scw.add_aspect(base_objects.RenderableAspect())
 
 # push scene
 scene.SceneHandler.push_scene(sc)
-
 
 # ------------------------------ #
 # game loop
@@ -62,8 +61,6 @@ while SORA.RUNNING:
 
     if SORA.is_key_clicked(pygame.K_d) and SORA.is_key_pressed(pygame.K_LSHIFT):
         SORA.DEBUG = not SORA.DEBUG
-
-    SORA.FRAMEBUFFER.blit(SORA.DEBUGBUFFER, (0, 0))
 
     # push frame
     SORA.push_framebuffer()
