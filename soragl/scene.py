@@ -129,13 +129,20 @@ class Chunk:
 
 
 class Aspect:
-    def __init__(self, target_component_class, priority: int = 0):
+    def __init__(self, target_component_class: list, priority: int = 0):
         """Create a processor"""
         # defined after added to world
         self._world = None
         # variables
         self.priority = priority
-        self._target = hash(target_component_class)
+        self._targets = [
+            hash(x)
+            for x in (
+                target_component_class
+                if type(target_component_class) == list
+                else [target_component_class]
+            )
+        ]
 
     def on_add(self):
         """When added to the world"""
@@ -148,8 +155,9 @@ class Aspect:
     def iterate_entities(self):
         """Iterate through the entities"""
         # print(self._world._components[self._target])
-        for entity in self._world._components[self._target]:
-            yield self._world._scene.get_entity(hash(entity))
+        for t in self._targets:
+            for entity in self._world._components[t]:
+                yield self._world._scene.get_entity(hash(entity))
 
 
 # ------------------------------ #
@@ -269,6 +277,8 @@ class World:
         # print(component.__class__.__name__, comp_hash)
         if comp_hash not in self._components:
             self._components[comp_hash] = set()
+        # find parent classes
+        print(__file__, "please find parent clases lmao")
         self._components[comp_hash].add(hash(entity))
         # add to entity
         entity._components[comp_hash] = component
@@ -326,8 +336,9 @@ class World:
         self._aspects.append(aspect)
         aspect.on_add()
         self._aspects.sort(key=lambda x: x.priority, reverse=True)
-        if aspect._target not in self._components:
-            self._components[aspect._target] = set()
+        for ast in aspect._targets:
+            if ast not in self._components:
+                self._components[ast] = set()
         # print("DEBUG: Aspect sorting", [x.priority for x in self._aspects])
         # print(self._aspects)
         # cache the components

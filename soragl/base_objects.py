@@ -180,6 +180,38 @@ class SpriteRendererAspectDebug(scene.Aspect):
 
 
 # ------------------------------ #
+# area2d
+
+
+class Area2D(scene.Component):
+    def __init__(self, width: int, height: int):
+        super().__init__()
+
+    def detect_collision(self, other):
+        """Detect collision with another shape"""
+        pass
+
+
+class Rectangle2D(Area2D):
+    def __init__(self, width: int, height: int):
+        super().__init__(width, height)
+        self.width = width
+        self.height = height
+
+    def detect_collision(self, other):
+        """Detect collision with another shape"""
+        pass
+
+
+class Area2DAspect(scene.Aspect):
+    def __init__(self):
+        super().__init__(Area2D)
+
+
+# TODO:
+# add in - circle + polygon
+
+# ------------------------------ #
 # collision2d
 
 

@@ -28,7 +28,7 @@ class PointSpring:
 
 DEFAULT_CONFIG = {
     "color": (0, 0, 255, 159),
-    "resolution": 1 / 0.1,
+    "resolution": 10,
     "k": 1.0,
     "damping": 0.05,
     "tension": 0.01,
@@ -50,20 +50,26 @@ class Water(physics.Entity):
         self.damping = self.config["damping"]
         self.tension = self.config["tension"]
         self.w_height = 1 - self.config["height"]
+        # points / 100px
+        self.resolution = self.config["resolution"]
         # self.points = numpy.zeros(int(width / self.config["resolution"]))
+        wp = int(self.resolution * self.area[0] / 100)
         self.points = [
             PointSpring((x, 0), self.kc, self.damping, self.tension)
-            for x in range(0, width + 1, int(self.config["resolution"]))
+            for x in range(0, width + wp, wp)
         ]
 
         # components
         self.c_sprite = base_objects.Sprite(width, height)
         self.sprite = self.c_sprite.sprite
+        self.c_collision = base_objects.Collision2DComponent()
 
     def on_ready(self):
         """Called when the object is ready."""
         self.add_component(self.c_sprite)
         self.add_component(base_objects.SpriteRenderer())
+        # add collision body
+        self.add_component(self.c_collision)
 
     def add_volume(self, volume):
         """Add volume to the water."""
