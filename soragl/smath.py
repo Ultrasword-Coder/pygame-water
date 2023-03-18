@@ -21,6 +21,16 @@ def __clamp__(val, low, high):
     return val
 
 
+def lerp(a, b, t):
+    """Return the linear interpolation between a and b"""
+    return a + (b - a) * t
+
+
+def lerpvec(a, b, t):
+    """Return the linear interpolation between vec a and vec b"""
+    return Vector2(lerp(a[0], b[0], t), lerp(a[1], b[1], t))
+
+
 # ------------------------------------------------------------ #
 # curve functions
 # ------------------------------------------------------------ #

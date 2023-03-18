@@ -108,6 +108,7 @@ class Entity:
         self._alive = False
 
     # === values / setters / getters
+
     @property
     def area(self):
         """Get the area"""
