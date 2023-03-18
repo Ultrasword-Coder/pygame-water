@@ -342,11 +342,12 @@ class World:
         # cache the components
         # self._components[aspect._target] = set()
 
-    def get_aspect(self, aspect_class):
-        """Get an aspect"""
-        for i in self._aspects:
-            if isinstance(i, aspect_class):
-                return i
+    def get_aspect(self, *args):
+        """Get an aspect -- given one or more classes"""
+        for aspect_class in args:
+            for i in self._aspects:
+                if isinstance(i, aspect_class):
+                    return i
         return None
 
     def remove_aspect(self, aspect_type):

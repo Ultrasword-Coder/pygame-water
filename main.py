@@ -4,7 +4,8 @@ import struct
 
 from pygame import draw as pgdraw
 from pygame import math as pgmath
-from soragl import animation, scene, physics, base_objects, mgl
+
+from soragl import animation, scene, physics, base_objects, mgl, smath, signal
 
 # ------------------------------ #
 # setup
@@ -26,7 +27,7 @@ SORA.create_context()
 # ------------------------------- #
 # imports
 
-from scripts import water
+from scripts import water, ball
 
 # ------------------------------- #
 
@@ -42,8 +43,9 @@ scw.add_entity(ww)
 
 # aspects
 # scw.add_aspect(base_objects.TileMapDebug())
-scw.add_aspect(base_objects.SpriteRendererAspectDebug())
+scw.add_aspect(base_objects.SpriteRendererAspect())
 scw.add_aspect(base_objects.Collision2DRendererAspectDebug())
+scw.add_aspect(base_objects.Area2DAspect())
 scw.add_aspect(base_objects.RenderableAspect())
 
 # push scene
@@ -61,7 +63,14 @@ while SORA.RUNNING:
 
     if SORA.is_key_clicked(pygame.K_d) and SORA.is_key_pressed(pygame.K_LSHIFT):
         SORA.DEBUG = not SORA.DEBUG
-
+    if SORA.is_mouse_clicked(0):
+        # add a ball object
+        b = ball.Ball(smath.randint(5, 20))
+        b.position.xy = SORA.get_mouse_rel()
+        scw.add_entity(b)
+    
+    # update signals
+    signal.handle_signals()
     # push frame
     SORA.push_framebuffer()
     # pygame.display.flip()

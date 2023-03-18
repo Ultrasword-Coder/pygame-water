@@ -384,7 +384,9 @@ def load_and_scale(image, size):
 
 def make_surface(width, height, flags=0, depth=32):
     """Creates a new surface."""
-    return pygame.Surface((width, height), flags, depth).convert_alpha()
+    p = pygame.Surface((width, height), flags, depth).convert_alpha()
+    p.fill((0, 0, 0, 0))
+    return p
 
 
 # audio

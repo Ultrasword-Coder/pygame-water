@@ -1,5 +1,8 @@
 import math
+from random import *
 import numpy as np
+
+
 from pygame.math import Vector2
 
 # ------------------------------------------------------------ #
@@ -29,6 +32,7 @@ def lerp(a, b, t):
 def lerpvec(a, b, t):
     """Return the linear interpolation between vec a and vec b"""
     return Vector2(lerp(a[0], b[0], t), lerp(a[1], b[1], t))
+
 
 
 # ------------------------------------------------------------ #

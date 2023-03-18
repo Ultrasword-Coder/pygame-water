@@ -22,7 +22,7 @@ class World2D:
     X_AXIS = RIGHT
     Y_AXIS = UP
 
-    GRAVITY = DOWN * 9.8
+    GRAVITY = DOWN * 98
 
 
 class World3D:

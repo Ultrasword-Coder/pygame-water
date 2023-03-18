@@ -1,5 +1,5 @@
 import soragl as SORA
-from soragl import scene, physics, mgl, animation, smath
+from soragl import scene, physics, mgl, animation, smath, signal
 
 import random
 import math
@@ -186,17 +186,14 @@ class SpriteRendererAspectDebug(scene.Aspect):
 class Area2D(scene.Component):
     def __init__(self, width: int, height: int):
         super().__init__()
-
-    def detect_collision(self, other):
-        """Detect collision with another shape"""
-        pass
-
-
-class Rectangle2D(Area2D):
-    def __init__(self, width: int, height: int):
-        super().__init__(width, height)
-        self.width = width
-        self.height = height
+        self.enter_signal_register = signal.SignalRegister("Area2D-enter")
+        self.overlap_signal_register = signal.SignalRegister("Area2D-overlap")
+        self.exit_signal_register = signal.SignalRegister("Area2D-exit")
+        
+    def on_add(self):
+        """On add"""
+        # set position 
+        self._entity.rect.center = self._entity.position
 
     def detect_collision(self, other):
         """Detect collision with another shape"""
@@ -206,6 +203,39 @@ class Rectangle2D(Area2D):
 class Area2DAspect(scene.Aspect):
     def __init__(self):
         super().__init__(Area2D)
+        # ensures runs after collsion2D aspect
+        # since we want to use updated positions of entities in world -- for area2D detection
+        self.priority = 18
+        self.a_collision2D = None
+        self.overlapped = set()
+
+    def on_add(self):
+        """On add"""
+        # grab aspect
+        self.a_collision2D = self._world.get_aspect(Collision2DAspect, Collision2DRendererAspectDebug)
+        if not self.a_collision2D:
+            raise NotImplementedError("Please add the Collision2DAspect before the Area2DAspect")
+    
+    def handle(self):
+        """Handle area2Ds"""
+        for entity in self.iterate_entities():
+            # check for collision with each of the active collision2D components
+            for other in self.a_collision2D.iterate_entities():
+                # rect collision between entities
+                if other.static: continue
+                if other.rect.colliderect(entity.rect):
+                    # raise a signal?
+                    # how to retrieve the component object faster?
+                    if id(other) in self.overlapped:
+                        entity.get_component(Area2D).overlap_signal_register.emit_signal(other)
+                    else:
+                        entity.get_component(Area2D).enter_signal_register.emit_signal(other)
+                        self.overlapped.add(id(other))
+                    # print(f"signal: {SORA.ENGINE_UPTIME:.2f}", entity)
+                elif id(other) in self.overlapped:
+                    entity.get_component(Area2D).exit_signal_register.emit_signal(other)
+                    self.overlapped.remove(id(other))
+
 
 
 # TODO:
@@ -221,6 +251,7 @@ class Collision2DComponent(scene.Component):
         # private
         self._offset = pgmath.Vector2(offset) if offset else pgmath.Vector2(0, 0)
         self._rect = None
+        self.signal_register = signal.SignalRegister("Collision2D")
 
     def on_add(self):
         """On add"""
